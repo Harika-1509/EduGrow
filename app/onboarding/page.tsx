@@ -1018,7 +1018,7 @@ export default function OnboardingPage() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
-        <div className="container mx-auto max-w-3xl min-h-screen flex items-center justify-center py-300">
+        <div className="container mx-auto px-6 lg:px-10 max-w-7xl min-h-screen py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1026,7 +1026,7 @@ export default function OnboardingPage() {
             className="space-y-8"
           >
             {/* Header */}
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 mb-2">
               <Button
                 variant="ghost"
                 onClick={() => setOnboardingType(null)}
@@ -1048,7 +1048,7 @@ export default function OnboardingPage() {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-muted rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2 max-w-5xl mx-auto">
               <div
                 className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
@@ -1056,7 +1056,7 @@ export default function OnboardingPage() {
             </div>
             
             {/* Progress Info */}
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground max-w-3xl mx-auto">
               {Object.keys(answers).length > 0 && (
                 <div className="space-y-1">
                   <p>Progress saved: {Object.keys(answers).length} questions answered</p>
@@ -1068,7 +1068,7 @@ export default function OnboardingPage() {
 
 
              {/* Tips Section */}
-             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-3xl mx-auto">
                <div className="flex items-start space-x-3">
                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                    <span className="text-blue-600 text-sm">💡</span>
@@ -1086,14 +1086,14 @@ export default function OnboardingPage() {
              </div>
 
             {/* Current Step */}
-            <Card className="border-border/40 bg-background/95 backdrop-blur">
-              <CardHeader>
+            <Card className="border-border/40 bg-background/95 backdrop-blur max-w-5xl mx-auto">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-2xl">{currentStepData.title}</CardTitle>
                 <CardDescription>
                   Let's understand your preferences better
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 md:space-y-8">
                 {currentStepData.questions.map((question) => (
                   <div key={question.id} className="space-y-4">
                                          <div className="flex items-center justify-between">

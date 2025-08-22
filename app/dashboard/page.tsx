@@ -4,13 +4,15 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { LogOut, User, Mail, Phone, Edit3, UserCircle, PanelsTopLeft, Sun, Moon, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
+import { LogOut, User, Mail, Phone, Edit3, PanelsTopLeft, Sun, Moon, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -20,6 +22,22 @@ export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", domain: "" });
+  const DOMAIN_OPTIONS = [
+    "AI & Machine Learning",
+    "Web Development",
+    "Data Science",
+    "Mobile Development",
+    "Cybersecurity",
+    "Cloud Computing",
+    "DevOps",
+    "UI/UX Design",
+    "Digital Marketing",
+    "Business Analytics",
+    "Product Management",
+    "Sales & Business Development",
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -104,18 +122,17 @@ export default function DashboardPage() {
                 )}
                 <span className="sr-only">Toggle theme</span>
               </Button>
-              <Button
-                variant="ghost"
-                className="p-0 h-10 w-10 rounded-full overflow-hidden"
-                onClick={() => router.push("/profile")}
-                title="View Profile"
-              >
-                {session.user?.image ? (
-                  <Image src={session.user.image} alt="User" width={40} height={40} />
-                ) : (
-                  <UserCircle className="h-8 w-8" />
-                )}
-              </Button>
+              <Button variant="outline" onClick={() => {
+                setForm({
+                  firstName: session.user?.firstName || "",
+                  lastName: session.user?.lastName || "",
+                  email: session.user?.email || "",
+                  phone: session.user?.phone || "",
+                  domain: userProfile?.domain || "",
+                });
+                setEditOpen(true);
+              }}>Edit Profile</Button>
+              
               <Button
                 variant="outline"
                 onClick={() => router.push("/auth/signout")}
@@ -126,6 +143,72 @@ export default function DashboardPage() {
               </Button>
             </div>
           </div>
+
+          {/* Edit Profile Dialog */}
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Edit Profile</DialogTitle>
+                <DialogDescription>Update your details. Email must be unique.</DialogDescription>
+              </DialogHeader>
+              <form
+                className="grid gap-3"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const res = await fetch("/api/user/profile/update", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ currentEmail: session.user?.email, ...form }),
+                  });
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    alert(err?.error || "Failed to update profile");
+                    return;
+                  }
+                  setEditOpen(false);
+                  window.location.reload();
+                }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">First Name</label>
+                    <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Last Name</label>
+                    <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Email</label>
+                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Phone</label>
+                    <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Domain</label>
+                  <select
+                    value={form.domain}
+                    onChange={(e) => setForm({ ...form, domain: e.target.value })}
+                    className="mt-1 w-full p-2.5 rounded-md border border-border bg-background text-foreground"
+                  >
+                    
+                    {DOMAIN_OPTIONS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+                  <Button type="submit">Save Changes</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           {/* Scrape Drawer */}
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
