@@ -11,16 +11,22 @@ const roadmapSchema = new mongoose.Schema({
   name: { type: String, required: true },
   domain: { type: String, required: true },
   chatId: { type: String, required: true, unique: true },
-  userId: { type: String, required: true },
+  userEmail: { type: String, required: true },
+  goal: { type: String, default: null },
+  priorKnowledge: { type: String, default: null },
+  chosenTrack: { type: String, default: null },
   todoList: [todoItemSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Update the updatedAt field before saving
 roadmapSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
 
-export const Roadmap = mongoose.models.Roadmap || mongoose.model('Roadmap', roadmapSchema);
+if (mongoose.models.Roadmap) {
+  delete mongoose.models.Roadmap;
+}
+
+export const Roadmap = mongoose.model('Roadmap', roadmapSchema);

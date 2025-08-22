@@ -4,23 +4,21 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { LogOut, User, Mail, Phone, Edit3, UserCircle, Sun, Moon, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
+import { User, Mail, Phone, Edit3, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Header } from "@/components/ui/header";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", domain: "" });
@@ -38,10 +36,6 @@ export default function DashboardPage() {
     "Product Management",
     "Sales & Business Development",
   ];
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -92,57 +86,19 @@ export default function DashboardPage() {
           className="space-y-6"
         >
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 py-4 sm:py-6 lg:py-8">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 font-bold">
-                <Image
-                  key={mounted ? theme : 'loading'}
-                  src={mounted && theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
-                  alt="CareerPath Logo"
-                  width={150}
-                  height={150}
-                  className="rounded-lg"
-                />
-              </div>
-             
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-             
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="rounded-full"
-                title="Toggle theme"
-              >
-                {mounted && theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-              <Button variant="outline" onClick={() => {
-                setForm({
-                  firstName: session.user?.firstName || "",
-                  lastName: session.user?.lastName || "",
-                  email: session.user?.email || "",
-                  phone: session.user?.phone || "",
-                  domain: userProfile?.domain || "",
-                });
-                setEditOpen(true);
-              }}>Edit Profile</Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => router.push("/auth/signout")}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
+          <Header
+            showEditProfile={true}
+            onEditProfile={() => {
+              setForm({
+                firstName: session.user?.firstName || "",
+                lastName: session.user?.lastName || "",
+                email: session.user?.email || "",
+                phone: session.user?.phone || "",
+                domain: userProfile?.domain || "",
+              });
+              setEditOpen(true);
+            }}
+          />
 
           {/* Edit Profile Dialog */}
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -346,7 +302,7 @@ export default function DashboardPage() {
           )}
 
           {/* Features Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-10">
             {[
               {
                 title: "AI Career Roadmap",

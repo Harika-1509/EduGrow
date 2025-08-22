@@ -33,9 +33,16 @@ export async function PUT(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const { todoList } = await request.json();
+    const body = await request.json();
+    const { todoList, domain, goal, priorKnowledge, chosenTrack } = body;
 
-    const roadmap = await RoadmapService.updateTodoList(params.chatId, todoList);
+    const roadmap = await RoadmapService.updateRoadmap(params.chatId, {
+      todoList,
+      domain,
+      goal,
+      priorKnowledge,
+      chosenTrack,
+    });
 
     if (!roadmap) {
       return NextResponse.json(

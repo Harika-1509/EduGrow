@@ -3,16 +3,20 @@ import { RoadmapService } from "@/lib/services/roadmapService";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, firstName, domain } = await request.json();
+    const { firstName, domain, userEmail } = await request.json();
 
-    if (!userId || !firstName || !domain) {
+    if (!firstName || !domain || !userEmail) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    const roadmap = await RoadmapService.createRoadmap(userId, firstName, domain);
+    // Always ensure the collection is properly set up with clean schema
+    await RoadmapService.ensureCollection();
+    
+    // Create roadmap with only the required fields
+    const roadmap = await RoadmapService.createRoadmap(firstName, domain, userEmail);
 
     return NextResponse.json({
       success: true,
