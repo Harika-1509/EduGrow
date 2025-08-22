@@ -195,138 +195,111 @@ export default function RoadmapChatPage({ params }: { params: { chatId: string }
       let updated: Partial<Roadmap> = {};
       let botReply: string | null = null;
 
-      // Understand user's message to check for small talk or relevant info
-      let understood: {
-        smallTalk: boolean;
-        domain?: string | null;
-        goal?: string | null;
-        priorKnowledge?: string | null;
-        followUp?: string | null;
-      } | null = null;
-      try {
-        const ures = await fetch(`/api/chat/understand/${params.chatId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: message }),
-        });
-        if (ures.ok) {
-          const data = await ures.json();
-          understood = data.result;
-        }
-      } catch (e) {
-        console.error('understand call failed', e);
-      }
-
-      // Determine current question for validation
-      let currentQuestion = "";
-      if (roadmap && !roadmap.goal) {
-        currentQuestion = "What is your final goal? (e.g., Becoming a backend developer)";
-      } else if (roadmap && !roadmap.priorKnowledge) {
-        currentQuestion = "Do you have any prior knowledge or experience related to this?";
-      } else if (roadmap && !roadmap.chosenTrack) {
-        currentQuestion = "Which track do you want to choose?";
-      }
-
-      // Validate response if we have a current question
-      let validation: { relevant: boolean; extractedInfo?: string | null; reason?: string | null } | null = null;
-      if (currentQuestion) {
-        try {
-          const vres = await fetch(`/api/chat/validate/${params.chatId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: message, currentQuestion }),
-          });
-          if (vres.ok) {
-            const data = await vres.json();
-            validation = data.result;
-          }
-        } catch (e) {
-          console.error('validation call failed', e);
-        }
-      }
-
       // Auto-set domain from user session if not already set
       if (roadmap && (!roadmap.domain || roadmap.domain.trim() === "") && session?.user?.domain) {
         updated.domain = session.user.domain;
       }
 
-      // Handle questions sequentially
+      // Handle roadmap creation flow
       if (roadmap && !roadmap.goal) {
-        if (understood?.smallTalk || !validation?.relevant || message.trim().length < 5) {
-          botReply = `Please provide a clear goal. ${currentQuestion}`;
-        } else {
-          updated.goal = understood?.goal || message.trim();
-          botReply = "Great! Do you have any prior knowledge or experience related to this?";
-        }
+        // First question: What is your final goal?
+        updated.goal = message.trim();
+        botReply = "Great! Do you have any prior knowledge or experience related to this?";
       } else if (roadmap && !roadmap.priorKnowledge) {
-        if (understood?.smallTalk || !validation?.relevant || message.trim().length < 3) {
-          botReply = `Please provide details about your prior knowledge. ${currentQuestion}`;
-        } else {
-          updated.priorKnowledge = understood?.priorKnowledge || message.trim();
-          const options = await fetchDynamicTrackOptions();
-          botReply = options.length > 0
-            ? `There are multiple tracks you could choose: ${options.join(", ")}. Which one do you want?`
-            : "Based on your background, there are a few great tracks you could choose. Which specialization are you most interested in?";
-        }
+        // Second question: Prior knowledge
+        updated.priorKnowledge = message.trim();
+        botReply = "Based on your background, I'll create a personalized roadmap. Which specialization track interests you most?";
       } else if (roadmap && !roadmap.chosenTrack) {
-        if (understood?.smallTalk || !validation?.relevant || message.trim().length < 2) {
-          botReply = `Please specify a track. ${currentQuestion}`;
-        } else {
-          updated.chosenTrack = message.trim();
-          const todos = generateRoadmapTodos(updated.chosenTrack);
+        // Third question: Choose track
+        updated.chosenTrack = message.trim();
+        
+        // Generate roadmap using Groq API
+        try {
+          const roadmapResponse = await fetch('/api/ai/roadmap-generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              domain: roadmap.domain,
+              goal: roadmap.goal,
+              priorKnowledge: roadmap.priorKnowledge,
+              chosenTrack: message.trim()
+            })
+          });
+          
+          if (roadmapResponse.ok) {
+            const { roadmapSteps } = await roadmapResponse.json();
+            updated.todoList = roadmapSteps;
+            botReply = "Perfect! I've created a personalized roadmap for you. Check the to-do list above for your learning path. You can now ask me questions about any step or get additional guidance!";
+          } else {
+            // Fallback to basic roadmap
+            const todos = generateRoadmapTodos(message.trim());
+            updated.todoList = todos;
+            botReply = "Here is a detailed roadmap. I also created a to-do list above. Feel free to ask me questions about any step!";
+          }
+        } catch (error) {
+          console.error('Failed to generate roadmap with Groq:', error);
+          const todos = generateRoadmapTodos(message.trim());
           updated.todoList = todos;
-          botReply = "Here is a detailed roadmap. I also created a to-do list above.";
+          botReply = "Here is a detailed roadmap. I also created a to-do list above. Feel free to ask me questions about any step!";
         }
       } else if (roadmap && roadmap.goal && roadmap.priorKnowledge && roadmap.chosenTrack) {
-        // All required questions answered, allow general assistance
+        // All required questions answered, allow general assistance using Groq
         try {
-          const res = await fetch(`/api/chat/${params.chatId}`, {
+          const res = await fetch(`/api/ai/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: message }),
+            body: JSON.stringify({
+              message: message.trim(),
+              userDomain: roadmap.domain,
+              conversationHistory: messages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.content
+              }))
+            }),
           });
+          
           if (res.ok) {
             const data = await res.json();
-            botReply = data.message.content;
+            botReply = data.response;
           } else {
-            botReply = "Noted. I will keep assisting you. Use the to-do list above to track progress.";
+            botReply = "I'm here to help with your roadmap! Use the to-do list above to track progress and ask me questions about any step.";
           }
         } catch (e) {
-          console.error("Gemini chat call failed", e);
-          botReply = "Noted. I will keep assisting you. Use the to-do list above to track progress.";
+          console.error("Groq chat call failed", e);
+          botReply = "I'm here to help with your roadmap! Use the to-do list above to track progress and ask me questions about any step.";
         }
       }
 
       // Update roadmap if there are changes
-      if (Object.keys(updated).length > 0 && roadmap) {
-        const res = await fetch(`/api/roadmap/${params.chatId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            todoList: updated.todoList ?? roadmap.todoList,
-            domain: updated.domain ?? roadmap.domain,
-            goal: updated.goal ?? roadmap.goal,
-            priorKnowledge: updated.priorKnowledge ?? roadmap.priorKnowledge,
-            chosenTrack: updated.chosenTrack ?? roadmap.chosenTrack,
-          }),
-        });
-        if (res.ok) {
-          const { roadmap: updatedRoadmap } = await res.json();
-          setRoadmap(updatedRoadmap);
+      if (Object.keys(updated).length > 0) {
+        try {
+          const updateResponse = await fetch(`/api/roadmap/${params.chatId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+          });
+          
+          if (updateResponse.ok) {
+            const { roadmap: updatedRoadmap } = await updateResponse.json();
+            setRoadmap(updatedRoadmap);
+          }
+        } catch (error) {
+          console.error("Failed to update roadmap:", error);
         }
       }
 
+      // Add bot reply
       if (botReply) {
-        await appendMessage({ content: botReply, role: "bot" });
+        const botMsg: ChatMessage = { content: botReply, role: "bot" };
+        await appendMessage(botMsg);
       }
 
       setMessage("");
-      toast({ title: "Sent" });
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {

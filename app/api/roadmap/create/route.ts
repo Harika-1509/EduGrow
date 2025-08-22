@@ -3,7 +3,7 @@ import { RoadmapService } from "@/lib/services/roadmapService";
 
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, domain, userEmail } = await request.json();
+    const { firstName, domain, userEmail, goal } = await request.json();
 
     if (!firstName || !domain || !userEmail) {
       return NextResponse.json(
@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
     // Always ensure the collection is properly set up with clean schema
     await RoadmapService.ensureCollection();
     
-    // Create roadmap with only the required fields
-    const roadmap = await RoadmapService.createRoadmap(firstName, domain, userEmail);
+    // Create roadmap with Groq API integration
+    const roadmap = await RoadmapService.createRoadmapWithGroq(firstName, domain, userEmail, goal);
 
     return NextResponse.json({
       success: true,

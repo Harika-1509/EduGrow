@@ -369,7 +369,7 @@ function DashboardContent() {
             {[
               {
                 title: "AI Career Roadmap",
-                description: "Get personalized career guidance based on your skills and interests",
+                description: "Get personalized career guidance powered by Groq AI",
                 icon: <Target className="w-6 h-6 text-blue-600" />,
                 status: "Explore",
                 href: "/roadmap",
