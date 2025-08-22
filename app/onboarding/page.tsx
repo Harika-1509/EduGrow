@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Brain, Target, ChevronRight, Edit3, MessageSquare } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Brain, Target, ChevronRight, Edit3, MessageSquare, Globe, BarChart, Palette, Shield, Smartphone, Cloud, Link, Gamepad2, Settings, TrendingUp, Code, Briefcase, Megaphone, DollarSign, Heart, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -753,27 +753,61 @@ export default function OnboardingPage() {
 
             {/* Domain Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {DOMAINS.map((domain) => (
-                <Card
-                  key={domain}
-                  className={`cursor-pointer transition-all ${
-                    selectedDomain === domain
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-primary/30 hover:bg-muted/50"
-                  }`}
-                  onClick={() => setSelectedDomain(domain)}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl mb-2">
-                      {selectedDomain === domain ? "🎯" : "💼"}
-                    </div>
-                    <p className="text-sm font-medium">{domain}</p>
-                    {selectedDomain === domain && (
-                      <Check className="w-5 h-5 text-primary mx-auto mt-2" />
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+              {DOMAINS.map((domain) => {
+                // Get appropriate icon for each domain
+                const getDomainIcon = (domainName: string) => {
+                  switch (domainName.toLowerCase()) {
+                    case 'ai & machine learning':
+                      return <Brain className="w-6 h-6 text-primary" />;
+                    case 'web development':
+                      return <Globe className="w-6 h-6 text-primary" />;
+                    case 'data science':
+                      return <BarChart className="w-6 h-6 text-primary" />;
+                    case 'mobile development':
+                      return <Smartphone className="w-6 h-6 text-primary" />;
+                    case 'cybersecurity':
+                      return <Shield className="w-6 h-6 text-primary" />;
+                    case 'cloud computing':
+                      return <Cloud className="w-6 h-6 text-primary" />;
+                    case 'devops':
+                      return <Settings className="w-6 h-6 text-primary" />;
+                    case 'ui/ux design':
+                      return <Palette className="w-6 h-6 text-primary" />;
+                    case 'digital marketing':
+                      return <Megaphone className="w-6 h-6 text-primary" />;
+                    case 'business analytics':
+                      return <TrendingUp className="w-6 h-6 text-primary" />;
+                    case 'product management':
+                      return <Briefcase className="w-6 h-6 text-primary" />;
+                    case 'sales & business development':
+                      return <DollarSign className="w-6 h-6 text-primary" />;
+                    default:
+                      return <Briefcase className="w-6 h-6 text-primary" />;
+                  }
+                };
+
+                return (
+                  <Card
+                    key={domain}
+                    className={`cursor-pointer transition-all ${
+                      selectedDomain === domain
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-primary/30 hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedDomain(domain)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className="mb-2 flex justify-center">
+                        {getDomainIcon(domain)}
+                      </div>
+                      <p className="text-sm font-medium">{domain}</p>
+                      {selectedDomain === domain && (
+                        <Check className="w-5 h-5 text-primary mx-auto mt-2" />
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Continue Button */}

@@ -111,7 +111,8 @@ export default function LandingPage() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
             <Image
-              src={theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
+              key={mounted ? theme : 'loading'}
+              src={mounted && theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
               alt="CareerPath Logo"
               width={100}
               height={120}
@@ -1203,7 +1204,8 @@ export default function LandingPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-bold">
                 <Image
-                  src={theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
+                  key={mounted ? theme : 'loading'}
+                  src={mounted && theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
                   alt="CareerPath Logo"
                   width={48}
                   height={48}
