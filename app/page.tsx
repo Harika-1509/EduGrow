@@ -28,12 +28,37 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
+import { UserCircle, LogOut, User, Mail, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LandingPage() {
+  const { data: session } = useSession();
+  const { toast } = useToast();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", domain: "" });
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  
+  const DOMAIN_OPTIONS = [
+    "AI & Machine Learning",
+    "Web Development",
+    "Data Science",
+    "Mobile Development",
+    "Cybersecurity",
+    "Cloud Computing",
+    "DevOps",
+    "UI/UX Design",
+    "Digital Marketing",
+    "Business Analytics",
+    "Product Management",
+    "Sales & Business Development",
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -104,7 +129,7 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <header
-        className={`sticky top-0 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
+        className={`sticky top-3 bottom-2 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
           isScrolled ? "bg-background/80 shadow-sm" : "bg-transparent"
         }`}
       >
@@ -114,8 +139,8 @@ export default function LandingPage() {
               key={mounted ? theme : 'loading'}
               src={mounted && theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
               alt="CareerPath Logo"
-              width={100}
-              height={120}
+              width={150}
+              height={150}
               className="rounded-lg"
             />
           </div>
@@ -154,12 +179,58 @@ export default function LandingPage() {
               )}
               <span className="sr-only">Toggle theme</span>
             </Button>
-            <Link
-              href="/auth/login"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Log in
-            </Link>
+            
+            {session?.user ? (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  className="h-9 w-9 rounded-full bg-muted flex items-center justify-center"
+                  title="Account"
+                  onClick={() => setProfileMenuOpen(v => !v)}
+                >
+                  <UserCircle className="h-5 w-5" />
+                </Button>
+                {profileMenuOpen && (
+                  <div className="absolute right-0 top-11 z-30 w-72 rounded-md border border-border bg-background p-3 shadow-sm">
+                    <div className="mb-2">
+                      <div className="font-semibold truncate">{session.user?.firstName} {session.user?.lastName}</div>
+                      <div className="text-xs text-muted-foreground truncate">{session.user?.email}</div>
+                    </div>
+                                                              <div className="grid gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                            setForm({
+                              firstName: session.user?.firstName || "",
+                              lastName: session.user?.lastName || "",
+                              email: session.user?.email || "",
+                              phone: session.user?.phone || "",
+                              domain: session.user?.domain || "",
+                            });
+                            setProfileMenuOpen(false);
+                            setEditOpen(true);
+                          }}
+                        >
+                          Edit Profile
+                        </Button>
+                      <Link href="/auth/signout">
+                        <Button variant="destructive" className="w-full">
+                          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="text-sm mr-6 font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Log in
+              </Link>
+            )}
             <Link href="/auth/register">
               <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -324,13 +395,45 @@ export default function LandingPage() {
                 FAQ
               </Link>
               <div className="flex flex-col gap-2 pt-2 border-t">
-                <Link
-                  href="/auth/login"
-                  className="py-2 text-sm font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Log in
-                </Link>
+                {session?.user ? (
+                  <>
+                    <div className="py-2">
+                      <div className="font-semibold text-sm">{session.user?.firstName} {session.user?.lastName}</div>
+                      <div className="text-xs text-muted-foreground">{session.user?.email}</div>
+                    </div>
+                                                              <button
+                        className="py-2 text-sm font-medium w-full text-left"
+                        onClick={() => {
+                          setForm({
+                            firstName: session.user?.firstName || "",
+                            lastName: session.user?.lastName || "",
+                            email: session.user?.email || "",
+                            phone: session.user?.phone || "",
+                            domain: session.user?.domain || "",
+                          });
+                          setMobileMenuOpen(false);
+                          setEditOpen(true);
+                        }}
+                      >
+                        Edit Profile
+                      </button>
+                    <Link
+                      href="/auth/signout"
+                      className="py-2 text-sm font-medium text-red-600"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign Out
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/login"
+                    className="py-2 text-sm font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                )}
                 <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>
                   <motion.div
                     whileHover={{ scale: 1.02 }}
@@ -1419,8 +1522,100 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+                 </div>
+       </footer>
+
+       {/* Edit Profile Dialog */}
+       <Dialog open={editOpen} onOpenChange={setEditOpen}>
+         <DialogContent className="max-w-sm">
+           <DialogHeader>
+             <DialogTitle>Edit Profile</DialogTitle>
+             <DialogDescription>Update your details. Email must be unique.</DialogDescription>
+           </DialogHeader>
+                        <form
+               className="grid gap-3"
+               onSubmit={async (e) => {
+                 e.preventDefault();
+                 if (!session?.user?.email) {
+                   toast({
+                     title: "Error",
+                     description: "Session not found. Please log in again.",
+                     variant: "destructive",
+                   });
+                   return;
+                 }
+                 try {
+                   const res = await fetch("/api/user/profile/update", {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({ currentEmail: session.user.email, ...form }),
+                   });
+                 
+                 if (!res.ok) {
+                   const err = await res.json().catch(() => ({}));
+                   toast({
+                     title: "Error",
+                     description: err?.error || "Failed to update profile",
+                     variant: "destructive",
+                   });
+                   return;
+                 }
+                 
+                 toast({
+                   title: "Success",
+                   description: "Profile updated successfully!",
+                 });
+                 setEditOpen(false);
+                 window.location.reload();
+               } catch (error) {
+                 toast({
+                   title: "Error",
+                   description: "An unexpected error occurred. Please try again.",
+                   variant: "destructive",
+                 });
+               }
+             }}
+           >
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               <div>
+                 <label className="text-sm text-muted-foreground">First Name</label>
+                 <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+               </div>
+               <div>
+                 <label className="text-sm text-muted-foreground">Last Name</label>
+                 <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+               </div>
+             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               <div>
+                 <label className="text-sm text-muted-foreground">Email</label>
+                 <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+               </div>
+               <div>
+                 <label className="text-sm text-muted-foreground">Phone</label>
+                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+               </div>
+             </div>
+             <div>
+               <label className="text-sm text-muted-foreground">Domain</label>
+               <select
+                 value={form.domain}
+                 onChange={(e) => setForm({ ...form, domain: e.target.value })}
+                 className="mt-1 w-full p-2.5 rounded-md border border-border bg-background text-foreground"
+               >
+                 <option value="">Select a domain</option>
+                 {DOMAIN_OPTIONS.map((d) => (
+                   <option key={d} value={d}>{d}</option>
+                 ))}
+               </select>
+             </div>
+             <div className="flex justify-end gap-2 mt-2">
+               <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+               <Button type="submit">Save Changes</Button>
+             </div>
+           </form>
+         </DialogContent>
+       </Dialog>
+     </div>
+   );
+ }

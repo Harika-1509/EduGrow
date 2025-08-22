@@ -1132,44 +1132,48 @@ export default function OnboardingPage() {
             </Card>
 
                          {/* Navigation */}
-             <div className="flex justify-between items-center">
-               <Button
-                 variant="outline"
-                 onClick={handlePrevStep}
-                 disabled={currentStep === 0}
-               >
-                 <ArrowLeft className="mr-2 h-4 w-4" />
-                 Previous
-               </Button>
-
-               {/* Progress Info */}
-               <div className="text-center text-sm text-muted-foreground">
+             <div className="max-w-5xl mx-auto w-full">
+               {/* Top: step count */}
+               <div className="text-center text-sm text-muted-foreground mb-3">
                  <p>Step {currentStep + 1} of {ONBOARDING_STEPS.length}</p>
                  <p className="text-xs">Your progress is automatically saved</p>
                </div>
 
-               {currentStep === ONBOARDING_STEPS.length - 1 ? (
-                 <div className="text-right">
-                   {!session?.user?.email && (
-                     <div className="text-xs text-orange-600 mb-2">
-                       ⚠️ Session loading, please wait...
-                     </div>
-                   )}
-                   <Button
-                     onClick={handleAISubmit}
-                     disabled={isLoading || !session?.user?.email}
-                     className="px-8"
-                   >
-                     {isLoading ? "Completing..." : "Complete Assessment"}
-                     <Check className="ml-2 h-4 w-4" />
-                   </Button>
-                 </div>
-               ) : (
-                 <Button onClick={handleNextStep}>
-                   Next
-                   <ArrowRight className="ml-2 h-4 w-4" />
+               {/* Bottom: buttons */}
+               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                 <Button
+                   variant="outline"
+                   onClick={handlePrevStep}
+                   disabled={currentStep === 0}
+                   className="sm:w-auto"
+                 >
+                   <ArrowLeft className="mr-2 h-4 w-4" />
+                   Previous
                  </Button>
-               )}
+
+                 {currentStep === ONBOARDING_STEPS.length - 1 ? (
+                   <div className="sm:text-right">
+                     {!session?.user?.email && (
+                       <div className="text-xs text-orange-600 mb-2 text-center sm:text-right">
+                         ⚠️ Session loading, please wait...
+                       </div>
+                     )}
+                     <Button
+                       onClick={handleAISubmit}
+                       disabled={isLoading || !session?.user?.email}
+                       className="px-8 sm:ml-auto"
+                     >
+                       {isLoading ? "Completing..." : "Complete Assessment"}
+                       <Check className="ml-2 h-4 w-4" />
+                     </Button>
+                   </div>
+                 ) : (
+                   <Button onClick={handleNextStep} className="sm:ml-auto">
+                     Next
+                     <ArrowRight className="ml-2 h-4 w-4" />
+                   </Button>
+                 )}
+               </div>
              </div>
           </motion.div>
         </div>
