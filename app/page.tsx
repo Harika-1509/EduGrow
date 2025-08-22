@@ -110,10 +110,13 @@ export default function LandingPage() {
       >
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
-            <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
-              S
-            </div>
-            <span>CareerPath</span>
+            <Image
+              src={theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
+              alt="CareerPath Logo"
+              width={100}
+              height={120}
+              className="rounded-lg"
+            />
           </div>
           <nav className="hidden md:flex gap-8">
             <Link
@@ -123,17 +126,12 @@ export default function LandingPage() {
               Features
             </Link>
             <Link
-              href="#testimonials"
+              href="#how-it-works"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               How it works
             </Link>
-            <Link
-              href="#pricing"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              About Us
-            </Link>
+            
             <Link
               href="#faq"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -162,10 +160,102 @@ export default function LandingPage() {
               Log in
             </Link>
             <Link href="/auth/register">
-              <Button className="rounded-full">
-                Get Started
-                <ChevronRight className="ml-1 size-4" />
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative group cursor-pointer"
+              >
+                {/* Floating background elements */}
+                <motion.div
+                  className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-75 blur-lg group-hover:opacity-100 transition-all duration-500"
+                  animate={{
+                    rotate: [0, 10, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Main button container */}
+                <motion.div
+                  className="relative rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-[2px] overflow-hidden"
+                  whileHover={{
+                    boxShadow: "0 0 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(147, 51, 234, 0.3)"
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Button content */}
+                  <div className={`relative rounded-full backdrop-blur-xl px-4 py-2 flex items-center gap-2 group-hover:bg-opacity-80 transition-all duration-300 ${
+                    theme === 'dark' ? 'bg-black/90 group-hover:bg-black/80' : 'bg-white/90 group-hover:bg-white/80'
+                  }`}>
+                    <motion.span
+                      className={`font-semibold text-sm relative z-10 ${
+                        theme === 'dark' ? 'text-white' : 'text-black'
+                      }`}
+                      initial={{ x: 0 }}
+                      whileHover={{ x: -2 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      Get Started
+                    </motion.span>
+                    
+                    <motion.div
+                      className="relative z-10"
+                      initial={{ x: 0, rotate: 0 }}
+                      whileHover={{ x: 2, rotate: 15 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      <ChevronRight className={`size-4 ${
+                        theme === 'dark' ? 'text-white' : 'text-black'
+                      }`} />
+                    </motion.div>
+                    
+                    {/* Shimmer effect */}
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{ duration: 0.6, ease: "easeInOut" }}
+                    />
+                    
+                    {/* Inner glow */}
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    
+                    {/* Particle effects */}
+                    <motion.div
+                      className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-white rounded-full opacity-0 group-hover:opacity-100"
+                      animate={{
+                        scale: [0, 1, 0],
+                        opacity: [0, 1, 0]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: 0.5
+                      }}
+                    />
+                    <motion.div
+                      className="absolute -bottom-1 -left-1 w-1 h-1 bg-purple-300 rounded-full opacity-0 group-hover:opacity-100"
+                      animate={{
+                        scale: [0, 1, 0],
+                        opacity: [0, 1, 0]
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        delay: 1
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
             </Link>
           </div>
           <div className="flex items-center gap-4 md:hidden">
@@ -241,10 +331,102 @@ export default function LandingPage() {
                   Log in
                 </Link>
                 <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="rounded-full">
-                    Get Started
-                    <ChevronRight className="ml-1 size-4" />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Floating background elements */}
+                    <motion.div
+                      className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-75 blur-lg group-hover:opacity-100 transition-all duration-500"
+                      animate={{
+                        rotate: [0, 10, 0],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                    
+                    {/* Main button container */}
+                    <motion.div
+                      className="relative rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-[2px] overflow-hidden"
+                      whileHover={{
+                        boxShadow: "0 0 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(147, 51, 234, 0.3)"
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Button content */}
+                      <div className={`relative rounded-full backdrop-blur-xl px-4 py-2 flex items-center gap-2 group-hover:bg-opacity-80 transition-all duration-300 ${
+                        theme === 'dark' ? 'bg-black/90 group-hover:bg-black/80' : 'bg-white/90 group-hover:bg-white/80'
+                      }`}>
+                        <motion.span
+                          className={`font-semibold text-sm relative z-10 ${
+                            theme === 'dark' ? 'text-white' : 'text-black'
+                          }`}
+                          initial={{ x: 0 }}
+                          whileHover={{ x: -2 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                        >
+                          Get Started
+                        </motion.span>
+                        
+                        <motion.div
+                          className="relative z-10"
+                          initial={{ x: 0, rotate: 0 }}
+                          whileHover={{ x: 2, rotate: 15 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                        >
+                          <ChevronRight className={`size-4 ${
+                            theme === 'dark' ? 'text-white' : 'text-black'
+                          }`} />
+                        </motion.div>
+                        
+                        {/* Shimmer effect */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          initial={{ x: "-100%" }}
+                          whileHover={{ x: "100%" }}
+                          transition={{ duration: 0.6, ease: "easeInOut" }}
+                        />
+                        
+                        {/* Inner glow */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent"
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                          transition={{ duration: 0.4 }}
+                        />
+                        
+                        {/* Particle effects */}
+                        <motion.div
+                          className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-white rounded-full opacity-0 group-hover:opacity-100"
+                          animate={{
+                            scale: [0, 1, 0],
+                            opacity: [0, 1, 0]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: 0.5
+                          }}
+                        />
+                        <motion.div
+                          className="absolute -bottom-1 -left-1 w-1 h-1 bg-purple-300 rounded-full opacity-0 group-hover:opacity-100"
+                          animate={{
+                            scale: [0, 1, 0],
+                            opacity: [0, 1, 0]
+                          }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            delay: 1
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  </motion.div>
                 </Link>
               </div>
             </div>
@@ -280,10 +462,102 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/login">
-                  <Button size="lg" className="rounded-full h-12 px-8 text-base">
-                    Sign In
-                    <ArrowRight className="ml-2 size-4" />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Floating background elements */}
+                    <motion.div
+                      className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-75 blur-lg group-hover:opacity-100 transition-all duration-500"
+                      animate={{
+                        rotate: [0, 10, 0],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                    
+                    {/* Main button container */}
+                    <motion.div
+                      className="relative rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-[2px] overflow-hidden"
+                      whileHover={{
+                        boxShadow: "0 0 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(147, 51, 234, 0.3)"
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Button content */}
+                      <div className={`relative rounded-full backdrop-blur-xl px-8 py-3 flex items-center gap-3 group-hover:bg-opacity-80 transition-all duration-300 ${
+                        theme === 'dark' ? 'bg-black/90 group-hover:bg-black/80' : 'bg-white/90 group-hover:bg-white/80'
+                      }`}>
+                        <motion.span
+                          className={`font-semibold text-base relative z-10 ${
+                            theme === 'dark' ? 'text-white' : 'text-black'
+                          }`}
+                          initial={{ x: 0 }}
+                          whileHover={{ x: -4 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                        >
+                          Get Started For Free
+                        </motion.span>
+                        
+                        <motion.div
+                          className="relative z-10"
+                          initial={{ x: 0, rotate: 0 }}
+                          whileHover={{ x: 4, rotate: 15 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                        >
+                          <ArrowRight className={`size-4 ${
+                            theme === 'dark' ? 'text-white' : 'text-black'
+                          }`} />
+                        </motion.div>
+                        
+                        {/* Shimmer effect */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          initial={{ x: "-100%" }}
+                          whileHover={{ x: "100%" }}
+                          transition={{ duration: 0.6, ease: "easeInOut" }}
+                        />
+                        
+                        {/* Inner glow */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent"
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                          transition={{ duration: 0.4 }}
+                        />
+                        
+                        {/* Particle effects */}
+                        <motion.div
+                          className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100"
+                          animate={{
+                            scale: [0, 1, 0],
+                            opacity: [0, 1, 0]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: 0.5
+                          }}
+                        />
+                        <motion.div
+                          className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-purple-300 rounded-full opacity-0 group-hover:opacity-100"
+                          animate={{
+                            scale: [0, 1, 0],
+                            opacity: [0, 1, 0]
+                          }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            delay: 1
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  </motion.div>
                 </Link>
                 <Link href="/auth/register">
                   <Button
@@ -291,8 +565,8 @@ export default function LandingPage() {
                     variant="outline"
                     className="rounded-full h-12 px-8 text-base"
                   >
-                    Get Started For Free
-                  </Button>
+                   Sign In
+                  </Button >
                 </Link>
               </div>
               {/* <div className="flex items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
@@ -412,7 +686,7 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="w-full py-20 md:py-32 bg-muted/30 relative overflow-hidden">
+        <section id="how-it-works" className="w-full  py-20 md:py-32 bg-muted/30 relative overflow-hidden">
           <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_40%,transparent_100%)]"></div>
 
           <div className="container px-4 md:px-6 relative">
@@ -928,10 +1202,13 @@ export default function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-bold">
-                <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
-                  C
-                </div>
-                <span>CareerPath</span>
+                <Image
+                  src={theme === 'dark' ? "/main-logo-dark.png" : "/main-logo.png"}
+                  alt="CareerPath Logo"
+                  width={48}
+                  height={48}
+                  className="rounded-lg"
+                />
               </div>
               <p className="text-sm text-muted-foreground">
                 AI-powered career mentor that helps students find clear,
