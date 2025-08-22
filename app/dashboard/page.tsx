@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { User, Mail, Phone, Edit3, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users, LogOut, UserCircle, Sun, Moon } from "lucide-react";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -398,7 +398,8 @@ export default function DashboardPage() {
                 title: "Trend Insights",
                 description: "Stay updated with job market trends and skill demands",
                 icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
-                status: "Coming Soon",
+                status: "Explore Now",
+                href: "/trend-insights",
               },
               {
                 title: "Community",
@@ -439,6 +440,21 @@ export default function DashboardPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
 

@@ -264,4 +264,18 @@ Respond ONLY with a JSON object:
       return { relevant: true };
     }
   }
+
+  // Generic text generation method for course ranking and other uses
+  static async generateText(prompt: string): Promise<string> {
+    try {
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      return text?.trim() || "";
+    } catch (error) {
+      console.error("Gemini text generation error:", error);
+      throw new Error("Failed to generate text with Gemini");
+    }
+  }
 }
