@@ -33,36 +33,6 @@ const userSchema = new mongoose.Schema({
     type: String, 
     default: null 
   },
-  onboardingData: {
-    personalBackground: {
-      education: String,
-      fieldOfStudy: String,
-      workPreference: String
-    },
-    interests: {
-      activities: [String],
-      industries: [String]
-    },
-    skills: {
-      currentSkills: [String],
-      technicalLevel: String
-    },
-    workPreferences: {
-      workWith: String,
-      workLocation: String,
-      workEnvironment: String
-    },
-    goals: {
-      motivation: String,
-      longTermVision: String
-    },
-    constraints: {
-      openToAbroad: String,
-      learningTime: String,
-      higherStudies: String,
-      financialConstraints: String
-    }
-  },
   createdAt: { 
     type: Date, 
     default: Date.now 

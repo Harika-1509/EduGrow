@@ -94,7 +94,7 @@ export class UserService {
   // Update onboarding data by ID
   static async updateOnboarding(
     userId: string, 
-    data: { domain?: string; onboardingData?: any; isComplete?: boolean }
+    data: { domain?: string }
   ) {
     try {
       const user = await User.findById(userId);
@@ -105,13 +105,6 @@ export class UserService {
       // Update fields
       if (data.domain !== undefined) {
         user.domain = data.domain;
-      }
-      
-      if (data.onboardingData) {
-        user.onboardingData = { ...user.onboardingData, ...data.onboardingData };
-      }
-      
-      if (data.isComplete) {
         user.onboarding = true;
       }
 
@@ -128,7 +121,7 @@ export class UserService {
   // Update onboarding data by email
   static async updateOnboardingByEmail(
     email: string, 
-    data: { domain?: string; onboardingData?: any; isComplete?: boolean }
+    data: { domain?: string }
   ) {
     try {
       const user = await User.findOne({ email });
@@ -139,13 +132,6 @@ export class UserService {
       // Update fields
       if (data.domain !== undefined) {
         user.domain = data.domain;
-      }
-      
-      if (data.onboardingData) {
-        user.onboardingData = { ...user.onboardingData, ...data.onboardingData };
-      }
-      
-      if (data.isComplete) {
         user.onboarding = true;
       }
 

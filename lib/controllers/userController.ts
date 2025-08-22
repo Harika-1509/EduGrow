@@ -41,7 +41,7 @@ export class UserController {
       await dbConnect();
       
       const body = await request.json();
-      const { userId, email, domain, onboardingData, isComplete = false } = body;
+      const { userId, email, domain } = body;
 
       if (!userId && !email) {
         return NextResponse.json(
@@ -55,21 +55,17 @@ export class UserController {
         // Use email-based update
         user = await UserService.updateOnboardingByEmail(email, {
           domain,
-          onboardingData,
-          isComplete,
         });
       } else {
         // Use ID-based update (for backward compatibility)
         user = await UserService.updateOnboarding(userId, {
           domain,
-          onboardingData,
-          isComplete,
         });
       }
 
       return NextResponse.json({
         success: true,
-        message: isComplete ? 'Onboarding completed successfully' : 'Progress saved successfully',
+        message: 'Onboarding updated successfully',
         user,
       });
     } catch (error: any) {
@@ -87,7 +83,7 @@ export class UserController {
       await dbConnect();
       
       const body = await request.json();
-      const { email, domain, onboardingData, isComplete = false } = body;
+      const { email, domain } = body;
 
       if (!email) {
         return NextResponse.json(
@@ -98,13 +94,11 @@ export class UserController {
 
       const user = await UserService.updateOnboardingByEmail(email, {
         domain,
-        onboardingData,
-        isComplete,
       });
 
       return NextResponse.json({
         success: true,
-        message: isComplete ? 'Onboarding completed successfully' : 'Progress saved successfully',
+        message: 'Onboarding updated successfully',
         user,
       });
     } catch (error: any) {

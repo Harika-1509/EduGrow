@@ -197,27 +197,19 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { refreshSession } = useSessionRefresh();
-
-  // Debug logging
-  console.log("OnboardingPage render:", { 
-    status, 
-    hasSession: !!session, 
-    hasUser: !!session?.user,
-    userId: session?.user?.id,
-    sessionKeys: session ? Object.keys(session) : [],
-    userKeys: session?.user ? Object.keys(session.user) : []
-  });
   
   const [onboardingType, setOnboardingType] = useState<"domain" | "ai" | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  // removed isSaving UI
   const [showSummarization, setShowSummarization] = useState(false);
   const [summarizationStep, setSummarizationStep] = useState(0);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [selectedFinalDomain, setSelectedFinalDomain] = useState<string>("");
+
+  // No server-side onboardingData persistence. Answers are kept in state/localStorage only.
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -249,19 +241,6 @@ export default function OnboardingPage() {
       
       // If onboarding is false or undefined, continue with onboarding
       console.log("User needs to complete onboarding, continuing...");  
-      
-      // Load existing progress from session if available
-      if (session.user.onboardingData) {
-        setAnswers(session.user.onboardingData);
-        // Determine which step to show based on existing data
-        const completedSteps = ONBOARDING_STEPS.filter(step => {
-          return step.questions.every(q => session.user.onboardingData[q.id]);
-        });
-        if (completedSteps.length > 0 && completedSteps.length < ONBOARDING_STEPS.length) {
-          setOnboardingType("ai");
-          setCurrentStep(completedSteps.length);
-        }
-      }
     } else if (status === "unauthenticated") {
       console.log("User is unauthenticated, redirecting to login");
       router.push("/auth/login");
@@ -280,6 +259,64 @@ export default function OnboardingPage() {
       return () => clearTimeout(timer);
     }
   }, [showSummarization, summarizationStep]);
+
+  // Persist answers/currentStep locally so tab switches don't lose data
+  useEffect(() => {
+    const email = session?.user?.email;
+    if (!email || typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(`onboardingAnswers:${email}`);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved && typeof saved === 'object') {
+          if (saved.answers && typeof saved.answers === 'object') {
+            setAnswers((prev) => Object.keys(prev).length ? prev : saved.answers);
+          }
+          if (typeof saved.currentStep === 'number') {
+            setCurrentStep((prev) => prev || saved.currentStep);
+          }
+          if (saved.onboardingType === 'domain' || saved.onboardingType === 'ai' || saved.onboardingType === null) {
+            setOnboardingType((prev) => prev ?? saved.onboardingType);
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.email]);
+
+  useEffect(() => {
+    const email = session?.user?.email;
+    if (!email || typeof window === 'undefined') return;
+    const payload = JSON.stringify({ answers, currentStep, onboardingType });
+    try {
+      localStorage.setItem(`onboardingAnswers:${email}`, payload);
+    } catch {}
+  }, [answers, currentStep, onboardingType, session?.user?.email]);
+
+  // Save just before tab is hidden/closed
+  useEffect(() => {
+    const email = session?.user?.email;
+    if (!email || typeof window === 'undefined') return;
+    const saveNow = () => {
+      try {
+        localStorage.setItem(
+          `onboardingAnswers:${email}`,
+          JSON.stringify({ answers, currentStep, onboardingType })
+        );
+      } catch {}
+    };
+    const onVisibility = () => {
+      if (document.visibilityState !== 'visible') saveNow();
+    };
+    window.addEventListener('beforeunload', saveNow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', saveNow);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [answers, currentStep, onboardingType, session?.user?.email]);
 
   // Wait for session to be fully loaded and complete
   // Also add a timeout check for stuck sessions
@@ -416,7 +453,8 @@ export default function OnboardingPage() {
         throw new Error("Failed to save domain selection");
       }
 
-      // Refresh session to get updated onboarding status
+      // Clear local draft and refresh session to get updated onboarding status
+      try { localStorage.removeItem(`onboardingAnswers:${session?.user?.email}`); } catch {}
       await refreshSession();
 
       toast({
@@ -451,30 +489,10 @@ export default function OnboardingPage() {
     }
   };
 
-  const saveProgress = async (progressData: Record<string, any>) => {
-    try {
-      setIsSaving(true);
-      const response = await fetch("/api/user/onboarding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: session.user?.email,
-          onboardingData: progressData,
-          isComplete: false,
-        }),
-      });
-
-      if (response.ok) {
-        // Refresh session to get updated onboarding data
-        await refreshSession();
-      }
-    } catch (error) {
-      console.error("Failed to save progress:", error);
-    } finally {
-      setIsSaving(false);
-    }
+  const saveProgress = async (_progressData: Record<string, any>) => {
+    // No-op server call. Answers are saved locally via useEffect/localStorage.
+    // This function remains to keep the call sites simple.
+    return;
   };
 
   const handleNextStep = () => {
@@ -535,26 +553,34 @@ export default function OnboardingPage() {
     
     setIsLoading(true);
     try {
-      const response = await fetch("/api/user/onboarding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: session.user.email,
-          onboardingData: answers,
-          isComplete: true,
-        }),
+      // Console analysis process and run Gemini, then show options
+      console.log("[Gemini] Starting analysis", {
+        totalAnswers: Object.keys(answers).length,
+        answeredIds: Object.keys(answers),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save onboarding data");
+      setShowSummarization(true);
+      setSummarizationStep(0);
+      try {
+        console.log("[Gemini] Sending request to /api/ai/analyze");
+        const analysisResponse = await fetch("/api/ai/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers }),
+        });
+        if (analysisResponse.ok) {
+          const result = await analysisResponse.json();
+          console.log("[Gemini] Analysis success", {
+            hasTopDomains: !!result.analysis?.topDomains,
+            topDomainsCount: result.analysis?.topDomains?.length ?? 0,
+            hasInsights: !!result.analysis?.overallInsights,
+          });
+          setAnalysisResult(result.analysis);
+        } else {
+          console.warn("[Gemini] Analysis failed", await analysisResponse.text());
+        }
+      } catch (e) {
+        console.error("[Gemini] Request error", e);
       }
-      // Refresh session to reflect onboarding and redirect to dashboard
-      await refreshSession();
-      router.push("/dashboard");
-      return;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -577,12 +603,16 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           email: session.user?.email,
           domain: domain,
+          isComplete: true,
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to save domain selection");
       }
+
+      // Clear local draft now that onboarding is complete
+      try { localStorage.removeItem(`onboardingAnswers:${session?.user?.email}`); } catch {}
 
       // Refresh session to get updated onboarding status
       await refreshSession();
@@ -1031,12 +1061,7 @@ export default function OnboardingPage() {
                 <div className="space-y-1">
                   <p>Progress saved: {Object.keys(answers).length} questions answered</p>
                   <p className="text-xs">Overall completion: {Math.round(progress)}%</p>
-                  {isSaving && (
-                    <div className="flex items-center justify-center space-x-2 text-blue-600">
-                      <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs">Saving progress...</span>
-                    </div>
-                  )}
+                  {/* saving progress UI removed */}
                 </div>
               )}
             </div>
