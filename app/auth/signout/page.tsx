@@ -10,14 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "next-themes";
 
 export default function SignoutPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -41,9 +39,7 @@ export default function SignoutPage() {
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  // no theme controls here; follow app-wide theme
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
@@ -61,7 +57,7 @@ export default function SignoutPage() {
             Back to dashboard
           </Link>
 
-          <Card className="border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <Card className="border-border/40 bg-background/95">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center">
                 Sign Out
@@ -78,7 +74,12 @@ export default function SignoutPage() {
                     <User className="h-5 w-5 text-muted-foreground" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {session.user.name || "User"}
+                        {(() => {
+                          const first = (session.user as any).firstName || "";
+                          const last = (session.user as any).lastName || "";
+                          const full = `${first} ${last}`.trim();
+                          return full || session.user.email || "";
+                        })()}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {session.user.email}
@@ -89,37 +90,6 @@ export default function SignoutPage() {
               )}
 
               <Separator />
-
-              {/* Theme Toggle */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Theme</h3>
-                <div className="flex space-x-2">
-                  <Button
-                    variant={theme === "light" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTheme("light")}
-                    className="flex-1"
-                  >
-                    Light
-                  </Button>
-                  <Button
-                    variant={theme === "dark" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTheme("dark")}
-                    className="flex-1"
-                  >
-                    Dark
-                  </Button>
-                  <Button
-                    variant={theme === "system" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTheme("system")}
-                    className="flex-1"
-                  >
-                    System
-                  </Button>
-                </div>
-              </div>
 
               <Separator />
 
