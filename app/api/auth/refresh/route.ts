@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
       success: true,
       session: {
         user: {
-          id: session.user.id,
           firstName: session.user.firstName,
           lastName: session.user.lastName,
           email: session.user.email,

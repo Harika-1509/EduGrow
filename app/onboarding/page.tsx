@@ -236,7 +236,6 @@ export default function OnboardingPage() {
 
     if (status === "authenticated" && session?.user) {
       console.log("Session loaded:", { 
-        userId: session.user.id, 
         email: session.user.email,
         onboarding: session.user.onboarding 
       });
@@ -287,17 +286,17 @@ export default function OnboardingPage() {
   const [sessionTimeout, setSessionTimeout] = useState(false);
   
   useEffect(() => {
-    if (status === "authenticated" && !session?.user?.id) {
+    if (status === "authenticated" && !session?.user?.email) {
       const timer = setTimeout(() => {
         setSessionTimeout(true);
       }, 5000); // 5 seconds timeout
       
       return () => clearTimeout(timer);
     }
-  }, [status, session?.user?.id]);
+  }, [status, session?.user?.email]);
   
   // Check if session is incomplete
-  const isSessionIncomplete = !session?.user?.id || session?.user?.onboarding === undefined;
+  const isSessionIncomplete = !session?.user?.email || session?.user?.onboarding === undefined;
   const shouldShowLoading = status === "loading" || isSessionIncomplete || sessionTimeout;
   
   if (shouldShowLoading) {
@@ -308,7 +307,7 @@ export default function OnboardingPage() {
           <p className="mt-4 text-muted-foreground">
             {status === "loading" ? "Loading session..." : "Initializing session..."}
           </p>
-          {status !== "loading" && !session?.user?.id && (
+          {status !== "loading" && !session?.user?.email && (
                          <div className="mt-4 space-y-2">
                <p className="text-sm text-orange-600">
                  {sessionTimeout ? "Session timeout - taking too long to load" : 
@@ -407,7 +406,7 @@ export default function OnboardingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: session.user?.id,
+          email: session.user?.email,
           domain: selectedDomain,
         }),
       });
@@ -446,7 +445,7 @@ export default function OnboardingPage() {
     setAnswers(newAnswers);
     
     // Auto-save progress
-    if (session?.user?.id) {
+    if (session?.user?.email) {
       saveProgress(newAnswers);
     }
   };
@@ -460,7 +459,7 @@ export default function OnboardingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: session.user?.id,
+          email: session.user?.email,
           onboardingData: progressData,
           isComplete: false,
         }),
@@ -503,12 +502,12 @@ export default function OnboardingPage() {
   };
 
   const handleAISubmit = async () => {
-    // Check if session and user ID are available
-    if (!session?.user?.id) {
+    // Check if session and user email are available
+    if (!session?.user?.email) {
       console.error("Session validation failed:", { 
         hasSession: !!session, 
         hasUser: !!session?.user, 
-        userId: session?.user?.id,
+        email: session?.user?.email,
         status 
       });
       
@@ -541,7 +540,7 @@ export default function OnboardingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: session.user.id,
+          email: session.user.email,
           onboardingData: answers,
           isComplete: true,
         }),
@@ -551,33 +550,10 @@ export default function OnboardingPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to save onboarding data");
       }
-
-      // Start summarization process
-      setShowSummarization(true);
-      setSummarizationStep(0);
-      
-      // Analyze answers with Gemini AI
-      try {
-        const analysisResponse = await fetch("/api/ai/analyze", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ answers }),
-        });
-
-        if (analysisResponse.ok) {
-          const result = await analysisResponse.json();
-          setAnalysisResult(result.analysis);
-        } else {
-          const errorData = await analysisResponse.json();
-          console.error("AI Analysis failed:", errorData.error);
-          // Continue with summarization even if AI analysis fails
-        }
-      } catch (error) {
-        console.error("Failed to analyze answers:", error);
-        // Continue with summarization even if AI analysis fails
-      }
+      // Refresh session to reflect onboarding and redirect to dashboard
+      await refreshSession();
+      router.push("/dashboard");
+      return;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -598,7 +574,7 @@ export default function OnboardingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: session.user?.id,
+          email: session.user?.email,
           domain: domain,
         }),
       });
@@ -1031,52 +1007,6 @@ export default function OnboardingPage() {
             </div>
 
 
-
-            {/* Step Completion Message */}
-            {(() => {
-              const currentStepData = ONBOARDING_STEPS[currentStep];
-              const stepQuestions = currentStepData.questions;
-              const completedQuestions = stepQuestions.filter(q => answers[q.id]);
-              const isStepCompleted = completedQuestions.length === stepQuestions.length;
-              
-              if (isStepCompleted) {
-                return (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-green-50 border border-green-200 rounded-lg p-3 text-center"
-                  >
-                    <p className="text-green-800 font-medium">🎉 Step completed! Great job!</p>
-                    <p className="text-green-600 text-sm">You can now proceed to the next step</p>
-                    {currentStep < ONBOARDING_STEPS.length - 1 && (
-                      <Button 
-                        onClick={handleNextStep}
-                        className="mt-3 bg-green-600 hover:bg-green-700"
-                        size="sm"
-                      >
-                        Continue to Next Step
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    )}
-                  </motion.div>
-                );
-              }
-              return null;
-            })()}
-
-
-
-                         {/* Debug Session Info (remove in production) */}
-             {process.env.NODE_ENV === 'development' && (
-               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs">
-                 <p className="font-medium mb-2">Debug Info:</p>
-                 <p>Status: {status}</p>
-                 <p>Has Session: {!!session}</p>
-                 <p>User ID: {session?.user?.id || 'undefined'}</p>
-                 <p>Email: {session?.user?.email || 'undefined'}</p>
-               </div>
-             )}
-
              {/* Tips Section */}
              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                <div className="flex items-start space-x-3">
@@ -1160,14 +1090,14 @@ export default function OnboardingPage() {
 
                {currentStep === ONBOARDING_STEPS.length - 1 ? (
                  <div className="text-right">
-                   {!session?.user?.id && (
+                   {!session?.user?.email && (
                      <div className="text-xs text-orange-600 mb-2">
                        ⚠️ Session loading, please wait...
                      </div>
                    )}
                    <Button
                      onClick={handleAISubmit}
-                     disabled={isLoading || !session?.user?.id}
+                     disabled={isLoading || !session?.user?.email}
                      className="px-8"
                    >
                      {isLoading ? "Completing..." : "Complete Assessment"}

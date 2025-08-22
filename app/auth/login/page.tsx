@@ -48,8 +48,8 @@ export default function LoginPage() {
         // Check if user has completed onboarding
         try {
           const session = await getSession();
-          if (session?.user?.id) {
-            const response = await fetch(`/api/user/${session.user.id}`);
+          if (session?.user?.email) {
+            const response = await fetch(`/api/user/email/${encodeURIComponent(session.user.email)}`);
             if (response.ok) {
               const userData = await response.json();
               if (!userData.onboarding) {

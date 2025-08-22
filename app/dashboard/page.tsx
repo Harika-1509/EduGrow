@@ -73,7 +73,7 @@ export default function DashboardPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => router.push("/auth/signout")}
               className="flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />

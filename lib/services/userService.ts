@@ -78,13 +78,60 @@ export class UserService {
     }
   }
 
-  // Update onboarding data
+  // Get user by email
+  static async getUserByEmail(email: string) {
+    try {
+      const user = await User.findOne({ email }).select('-password');
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Update onboarding data by ID
   static async updateOnboarding(
     userId: string, 
     data: { domain?: string; onboardingData?: any; isComplete?: boolean }
   ) {
     try {
       const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Update fields
+      if (data.domain !== undefined) {
+        user.domain = data.domain;
+      }
+      
+      if (data.onboardingData) {
+        user.onboardingData = { ...user.onboardingData, ...data.onboardingData };
+      }
+      
+      if (data.isComplete) {
+        user.onboarding = true;
+      }
+
+      await user.save();
+
+      // Return updated user without password
+      const { password, ...userWithoutPassword } = user.toObject();
+      return userWithoutPassword;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Update onboarding data by email
+  static async updateOnboardingByEmail(
+    email: string, 
+    data: { domain?: string; onboardingData?: any; isComplete?: boolean }
+  ) {
+    try {
+      const user = await User.findOne({ email });
       if (!user) {
         throw new Error('User not found');
       }

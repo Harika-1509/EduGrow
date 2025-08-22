@@ -6,6 +6,16 @@ import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
 
+type UserDoc = {
+  _id: unknown;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  onboarding?: boolean;
+  domain?: string | null;
+  onboardingData?: any;
+};
+
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -73,6 +83,24 @@ export const authOptions = {
         console.log("JWT callback - token updated:", token);
       } else {
         console.log("JWT callback - no user, token:", token);
+        // Refresh token fields from DB to reflect latest user state (e.g., onboarding changes)
+        try {
+          const email = token.email as string | undefined;
+          if (email) {
+            const dbUser = await User.findOne({ email }).lean<UserDoc | null>();
+            if (dbUser) {
+              token.id = (dbUser._id as any)?.toString?.() || token.id;
+              token.firstName = dbUser.firstName ?? token.firstName;
+              token.lastName = dbUser.lastName ?? token.lastName;
+              token.phone = dbUser.phone ?? token.phone;
+              token.onboarding = Boolean(dbUser.onboarding);
+              token.domain = dbUser.domain ?? null;
+              token.onboardingData = dbUser.onboardingData ?? null;
+            }
+          }
+        } catch (e) {
+          console.error("JWT DB sync error:", e);
+        }
       }
       return token;
     },
