@@ -5,6 +5,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
+import dbConnect from "@/lib/db";
 
 type UserDoc = {
   _id: unknown;
@@ -34,6 +35,7 @@ export const authOptions = {
         }
 
         try {
+          await dbConnect();
           const user = await User.findOne({ email: credentials.email });
           if (!user) {
             return null;
@@ -87,6 +89,7 @@ export const authOptions = {
         try {
           const email = token.email as string | undefined;
           if (email) {
+            await dbConnect();
             const dbUser = await User.findOne({ email }).lean<UserDoc | null>();
             if (dbUser) {
               token.id = (dbUser._id as any)?.toString?.() || token.id;

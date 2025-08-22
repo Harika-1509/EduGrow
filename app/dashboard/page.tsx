@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { LogOut, User, Mail, Phone, Edit3, PanelsTopLeft, Sun, Moon, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
+import { LogOut, User, Mail, Phone, Edit3, UserCircle, Sun, Moon, Target, Briefcase, MessageSquare, BarChart, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -352,7 +352,8 @@ export default function DashboardPage() {
                 title: "AI Career Roadmap",
                 description: "Get personalized career guidance based on your skills and interests",
                 icon: <Target className="w-6 h-6 text-blue-600" />,
-                status: "Coming Soon",
+                status: "Explore",
+                href: "/roadmap",
               },
               {
                 title: "Opportunity Hub",
@@ -391,12 +392,22 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="h-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <Card
+                  className={`h-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+                    feature.href ? "cursor-pointer transition-shadow hover:shadow-md" : ""
+                  }`}
+                  onClick={() => {
+                    if (feature.href) {
+                      // Use a programmatic navigation without importing router here
+                      window.location.href = feature.href;
+                    }
+                  }}
+                >
                   <CardContent className="p-6">
                     <div className="mb-4">{feature.icon}</div>
                     <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground mb-4">{feature.description}</p>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant={feature.href ? "default" : "outline"} className="text-xs">
                       {feature.status}
                     </Badge>
                   </CardContent>
