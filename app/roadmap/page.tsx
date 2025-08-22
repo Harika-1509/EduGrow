@@ -12,15 +12,31 @@ export default function RoadmapPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/login");
     }
-    if (status === "authenticated") {
-      setIsLoading(false);
+    if (status === "authenticated" && session?.user) {
+      // Fetch user profile to get domain
+      const fetchUserProfile = async () => {
+        try {
+          const response = await fetch(`/api/user/${session.user.id}`);
+          if (response.ok) {
+            const userData = await response.json();
+            setUserProfile(userData);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user profile:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchUserProfile();
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -48,14 +64,43 @@ export default function RoadmapPage() {
               <h1 className="text-3xl font-bold">Your Roadmaps</h1>
               <p className="text-muted-foreground">Plan and track your personalized learning journeys</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => router.push("/")}> 
-                <ArrowLeft className="h-4 w-4 mr-2" /> Back
-              </Button>
-              <Button onClick={() => alert("Create roadmap flow coming soon")}> 
-                <Plus className="h-4 w-4 mr-2" /> Create New Roadmap
-              </Button>
-            </div>
+                         <div className="flex items-center gap-3">
+               <Button variant="outline" onClick={() => router.push("/dashboard")}> 
+                 <ArrowLeft className="h-4 w-4 mr-2" /> Back
+               </Button>
+               <Button onClick={async () => {
+                 if (!session?.user?.id || !session?.user?.firstName || !userProfile?.domain) {
+                   alert("Missing user information");
+                   return;
+                 }
+                 
+                 try {
+                   const response = await fetch("/api/roadmap/create", {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({
+                       userId: session.user.id,
+                       firstName: session.user.firstName,
+                       domain: userProfile.domain
+                     })
+                   });
+                   
+                   if (!response.ok) {
+                     const error = await response.json();
+                     alert(error.error || "Failed to create roadmap");
+                     return;
+                   }
+                   
+                   const { roadmap } = await response.json();
+                   router.push(`/roadmap/${roadmap.chatId}`);
+                 } catch (error) {
+                   console.error("Error creating roadmap:", error);
+                   alert("Failed to create roadmap");
+                 }
+               }}> 
+                 <Plus className="h-4 w-4 mr-2" /> Create New Roadmap
+               </Button>
+             </div>
           </div>
 
           {/* Empty State */}
@@ -67,9 +112,38 @@ export default function RoadmapPage() {
                 <p className="text-muted-foreground max-w-md">
                   Start by creating your first roadmap. Define milestones and let us guide you with the right resources.
                 </p>
-                <Button onClick={() => alert("Create roadmap flow coming soon")}> 
-                  <Plus className="h-4 w-4 mr-2" /> Add New Roadmap
-                </Button>
+                                 <Button onClick={async () => {
+                   if (!session?.user?.id || !session?.user?.firstName || !userProfile?.domain) {
+                     alert("Missing user information");
+                     return;
+                   }
+                   
+                   try {
+                     const response = await fetch("/api/roadmap/create", {
+                       method: "POST",
+                       headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify({
+                         userId: session.user.id,
+                         firstName: session.user.firstName,
+                         domain: userProfile.domain
+                       })
+                     });
+                     
+                     if (!response.ok) {
+                       const error = await response.json();
+                       alert(error.error || "Failed to create roadmap");
+                       return;
+                     }
+                     
+                     const { roadmap } = await response.json();
+                     router.push(`/roadmap/${roadmap.chatId}`);
+                   } catch (error) {
+                     console.error("Error creating roadmap:", error);
+                     alert("Failed to create roadmap");
+                   }
+                 }}> 
+                   <Plus className="h-4 w-4 mr-2" /> Add New Roadmap
+                 </Button>
               </div>
             </CardContent>
           </Card>
