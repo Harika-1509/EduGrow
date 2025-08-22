@@ -378,7 +378,8 @@ export default function DashboardPage() {
                 title: "Opportunity Hub",
                 description: "Discover courses, internships, and projects tailored to your path",
                 icon: <Briefcase className="w-6 h-6 text-blue-600" />,
-                status: "Coming Soon",
+                status: "Explore Now",
+                href: "/opportunity-hub",
               },
               {
                 title: "AI Chatbot Mentor",
@@ -387,10 +388,11 @@ export default function DashboardPage() {
                 status: "Coming Soon",
               },
               {
-                title: "Skill Analytics",
-                description: "Track your progress and identify skill gaps",
-                icon: <BarChart className="w-6 h-6 text-blue-600" />,
-                status: "Coming Soon",
+                title: "News and Updates",
+                description: "Stay informed with the latest industry news and career updates",
+                icon: <MessageSquare className="w-6 h-6 text-blue-600" />,
+                status: "Explore Now",
+                href: "/newsandtrends",
               },
               {
                 title: "Trend Insights",

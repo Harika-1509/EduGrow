@@ -3,8 +3,25 @@ import { GeminiService } from "@/lib/services/geminiService";
 
 export async function POST(request: NextRequest) {
   try {
-    const { answers } = await request.json();
+    const { prompt, type, answers } = await request.json();
 
+    if (type === 'course-ranking') {
+      if (!prompt) {
+        return NextResponse.json(
+          { error: "Prompt is required for course ranking" },
+          { status: 400 }
+        );
+      }
+
+      const response = await GeminiService.generateText(prompt);
+      
+      return NextResponse.json({
+        success: true,
+        response
+      });
+    }
+
+    // Handle onboarding analysis (existing functionality)
     if (!answers) {
       return NextResponse.json(
         { error: "Answers are required" },
@@ -21,7 +38,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Analysis error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to analyze answers" },
+      { error: error.message || "Failed to analyze" },
       { status: 500 }
     );
   }
