@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Domain or search query is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
+    const apiKey = process.env.NEWS_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'News API key not configured' }, { status: 500 });
     }
