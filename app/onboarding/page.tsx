@@ -463,7 +463,7 @@ export default function OnboardingPage() {
       });
 
       setTimeout(() => {
-        router.push("/lako-nown/dashboard");
+        router.push("/dashboard");
       }, 1500);
     } catch (error) {
       toast({
